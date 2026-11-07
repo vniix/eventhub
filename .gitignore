@@ -1,0 +1,7 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local database exports (only database/eventhub.sql is committed)
+*.sql.bak
