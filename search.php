@@ -1,53 +1,40 @@
 <?php
-/*
- * search.php — Search events
- * Owner: Durar (درر)
- * Uses: events table (title, description, category, event_date, location, image)
- */
-require_once "db.php";
+// search.php — Search events
+// Owner: Durar (درر)
 
-$q        = trim($_GET["q"] ?? "");
-$category = trim($_GET["category"] ?? "");
-$searched = ($q !== "" || $category !== "");
-$results  = [];
+include "db.php";
 
-if ($searched) {
-    $sql    = "SELECT * FROM events WHERE (title LIKE ? OR description LIKE ? OR location LIKE ?)";
-    $like   = "%" . $q . "%";
-    $types  = "sss";
-    $params = [$like, $like, $like];
+// 1) Read what the user typed (form uses method="get")
+$q = "";
+$category = "";
 
-    if ($category !== "") {
-        $sql     .= " AND category = ?";
-        $types   .= "s";
-        $params[] = $category;
-    }
-    $sql .= " ORDER BY event_date";
-
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, $types, ...$params);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    while ($row = mysqli_fetch_assoc($result)) {
-        $results[] = $row;
-    }
+if (isset($_GET["q"])) {
+    $q = $_GET["q"];
+}
+if (isset($_GET["category"])) {
+    $category = $_GET["category"];
 }
 
-// Category list for the drop-down (taken from the database)
-$categories = [];
-$catResult = mysqli_query($conn, "SELECT DISTINCT category FROM events WHERE category <> '' ORDER BY category");
-while ($c = mysqli_fetch_assoc($catResult)) {
-    $categories[] = $c["category"];
-}
+// 2) Search only after the user pressed the Search button
+$searched = false;
 
-// Highlight the searched word inside a text
-function highlight($text, $word)
-{
-    $safe = e($text);
-    if ($word === "") {
-        return $safe;
+if (isset($_GET["q"])) {
+    $searched = true;
+
+    // Make the text safe before putting it inside SQL
+    $safeQ = mysqli_real_escape_string($conn, $q);
+    $safeCategory = mysqli_real_escape_string($conn, $category);
+
+    $sql = "SELECT * FROM events WHERE (title LIKE '%$safeQ%' OR description LIKE '%$safeQ%')";
+
+    if ($category != "") {
+        $sql = $sql . " AND category = '$safeCategory'";
     }
-    return preg_replace("/(" . preg_quote(e($word), "/") . ")/i", "<mark>$1</mark>", $safe);
+
+    $sql = $sql . " ORDER BY event_date";
+
+    $result = mysqli_query($conn, $sql);
+    $count = mysqli_num_rows($result);
 }
 
 $pageTitle  = "Search";
@@ -58,55 +45,54 @@ include "includes/header.php";
 <section class="section">
     <div class="container">
         <h1>Search events</h1>
-        <p class="page-intro">Search by event name, description or location.</p>
+        <p class="page-intro">Search by event name or description.</p>
 
-        <form class="search-bar" method="GET" action="search.php">
-            <label for="q" class="muted" style="position:absolute;left:-9999px">Search word</label>
-            <input type="search" id="q" name="q" placeholder="e.g. workshop" value="<?php echo e($q); ?>">
+        <form class="search-bar" method="get" action="search.php">
+            <input type="search" name="q" placeholder="e.g. workshop" value="<?php echo htmlspecialchars($q); ?>">
 
-            <label for="category" class="muted" style="position:absolute;left:-9999px">Category</label>
-            <select id="category" name="category">
+            <select name="category">
                 <option value="">All categories</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo e($cat); ?>" <?php echo $cat === $category ? "selected" : ""; ?>>
-                        <?php echo e($cat); ?>
-                    </option>
-                <?php endforeach; ?>
+                <option value="Tech" <?php if ($category == "Tech") { echo "selected"; } ?>>Tech</option>
+                <option value="Business" <?php if ($category == "Business") { echo "selected"; } ?>>Business</option>
+                <option value="Design" <?php if ($category == "Design") { echo "selected"; } ?>>Design</option>
+                <option value="Health" <?php if ($category == "Health") { echo "selected"; } ?>>Health</option>
             </select>
 
-            <button type="submit" class="btn">Search</button>
+            <input type="submit" value="Search" class="btn">
         </form>
 
-        <?php if ($searched): ?>
-            <p class="muted">
-                <strong style="color:var(--navy)"><?php echo count($results); ?> result<?php echo count($results) === 1 ? "" : "s"; ?></strong>
-                <?php if ($q !== ""): ?> for “<?php echo e($q); ?>”<?php endif; ?>
-                <?php if ($category !== ""): ?> in <?php echo e($category); ?><?php endif; ?>
-            </p>
+        <?php
+        if ($searched == false) {
+            echo '<div class="empty">Type a word above and press Search.</div>';
+        } elseif ($count == 0) {
+            echo '<div class="empty">No events match your search. Try another word.</div>';
+        } else {
+            echo '<p class="muted"><strong>' . $count . ' result(s)</strong> found.</p>';
+            echo '<div class="result-list">';
 
-            <?php if (count($results) === 0): ?>
-                <div class="empty">No events match your search. Try another word or category.</div>
-            <?php else: ?>
-                <div class="result-list">
-                    <?php foreach ($results as $event): ?>
-                        <article class="result-item">
-                            <img src="<?php echo e($event["image"] ?: "images/events/placeholder.svg"); ?>" alt="<?php echo e($event["title"]); ?>">
-                            <div class="grow">
-                                <h3><?php echo highlight($event["title"], $q); ?></h3>
-                                <div class="meta">
-                                    <span><?php echo e(date("d M Y", strtotime($event["event_date"]))); ?></span>
-                                    <span><?php echo e($event["location"]); ?></span>
-                                    <span class="cat cat-<?php echo e(strtolower($event["category"])); ?>"><?php echo e($event["category"]); ?></span>
-                                </div>
-                            </div>
-                            <a class="btn btn-dark btn-sm" href="event.php?id=<?php echo (int) $event["id"]; ?>">View</a>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="empty">Type a word above and press Search.</div>
-        <?php endif; ?>
+            while ($row = mysqli_fetch_assoc($result)) {
+                $image = $row["image"];
+                if ($image == "") {
+                    $image = "images/events/placeholder.svg";
+                }
+
+                echo '<div class="result-item">';
+                echo '  <img src="' . $image . '" alt="' . $row["title"] . '">';
+                echo '  <div class="grow">';
+                echo '    <h3>' . $row["title"] . '</h3>';
+                echo '    <div class="meta">';
+                echo '      <span>' . $row["event_date"] . '</span>';
+                echo '      <span>' . $row["location"] . '</span>';
+                echo '      <span class="cat cat-' . strtolower($row["category"]) . '">' . $row["category"] . '</span>';
+                echo '    </div>';
+                echo '  </div>';
+                echo '  <a class="btn btn-dark btn-sm" href="event.php?id=' . $row["id"] . '">View</a>';
+                echo '</div>';
+            }
+
+            echo '</div>';
+        }
+        ?>
     </div>
 </section>
 

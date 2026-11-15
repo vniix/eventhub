@@ -1,11 +1,7 @@
 <?php
-/*
- * includes/footer.php — shared footer
- * Owner: Durar (درر) — internal + external links
- *
- * HOW TO USE (bottom of every page):
- *     <?php include "includes/footer.php"; ?>
- */
+// includes/footer.php — shared footer
+// Owner: Durar (درر)
+// How to use it (bottom of every page):  include "includes/footer.php";
 ?>
 </main>
 
@@ -27,13 +23,13 @@
         <div>
             <h3>Follow us</h3>
             <ul class="footer-links">
-                <li><a href="https://uqu.edu.sa" target="_blank" rel="noopener">Umm Al-Qura University</a></li>
-                <li><a href="https://x.com" target="_blank" rel="noopener">X (Twitter)</a></li>
-                <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+                <li><a href="https://uqu.edu.sa" target="_blank">Umm Al-Qura University</a></li>
+                <li><a href="https://x.com" target="_blank">X (Twitter)</a></li>
+                <li><a href="https://instagram.com" target="_blank">Instagram</a></li>
             </ul>
         </div>
     </div>
-    <p class="copyright">&copy; 2026 EventHub &middot; CS3810T Team Project</p>
+    <p class="copyright">&copy; 2026 EventHub - CS3810T Team Project</p>
 </footer>
 
 <script src="js/main.js"></script>

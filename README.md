@@ -30,17 +30,17 @@ eventhub/
 ├── schedule.php         لمى
 ├── register.php         لانا
 ├── success.php          لانا
-├── search.php           درر    
-├── dashboard.php        درر    
+├── search.php           درر   ✅ جاهز
+├── dashboard.php        درر   ✅ جاهز
 ├── add_event.php        دانه
 ├── edit_event.php       دانه
 ├── delete_event.php     دانه
-├── db.php               درر    
+├── db.php               درر   ✅ جاهز
 ├── includes/
-│   ├── header.php       درر    (الهيدر + القائمة)
-│   └── footer.php       درر    (الفوتر + الروابط)
-├── css/style.css        مشترك  
-├── js/main.js           مشترك 
+│   ├── header.php       درر   ✅ (الهيدر + القائمة)
+│   └── footer.php       درر   ✅ (الفوتر + الروابط)
+├── css/style.css        مشترك ✅ (لا تعدلينه بدون ما تقولين لدرر)
+├── js/main.js           مشترك ✅
 ├── images/              الشعار + الأيقونة + صور الفعاليات (images/events/)
 ├── media/               الفيديو / الصوت
 └── database/eventhub.sql   دانه
@@ -52,7 +52,7 @@ eventhub/
 
 ```php
 <?php
-require_once "db.php";                 // إذا الصفحة تقرأ من قاعدة البيانات
+include "db.php";                      // إذا الصفحة تقرأ من قاعدة البيانات
 $pageTitle  = "Events";                // عنوان التبويب
 $activePage = "events";                // home / events / schedule / search / dashboard / register
 // $extraCss = "css/events.css";       // اختياري: ملف CSS خاص بصفحتك
@@ -64,7 +64,7 @@ include "includes/header.php";
 <?php include "includes/footer.php"; ?>
 ```
 
-- `$conn` هو الاتصال بقاعدة البيانات.
+- `$conn` هو الاتصال بقاعدة البيانات، مثلًا: `$result = mysqli_query($conn, "SELECT * FROM events");`
 - `e($text)` تطبع النص بأمان داخل HTML، مثلًا: `<?php echo e($row["title"]); ?>`
 
 ---
@@ -160,11 +160,11 @@ git push
 | فيديو / صوت | event |
 | CSS: inline + internal + external، أكثر من 8 ألوان، class + id، `:hover` | كل الصفحات |
 | Flexbox + Grid | الهيدر · الكروت |
-| viewport + 2 media queries | style.css  |
-| transform · filter · transition | style.css  |
+| viewport + 2 media queries | style.css ✅ |
+| transform · filter · transition | style.css ✅ |
 | Slideshow | index |
 | MySQL 15+ سجل، 3 حقول أو أكثر | eventhub.sql |
 | insert / update / delete | add · edit · delete |
-| dashboard.php + بحث | dashboard  · search  |
+| dashboard.php + بحث | dashboard ✅ · search ✅ |
 
 **للتسليم:** ملف zip للمجلد كامل (مع `database/eventhub.sql`) + PDF صفحتين (الأعضاء والأدوار، المميزات، صور شاشة كمبيوتر وجوال).
